@@ -47,5 +47,10 @@
   "WIS.Settings.PennyGranularity.Name": "Rounding granularity",
   "WIS.Settings.PennyGranularity.Hint": "How finely to round income: whole penny or quarter-penny (0.25 — needs a quarter-penny coin on the sheet; half = two quarters).",
   "WIS.Settings.PennyGranularity.Whole": "Whole penny (1)",
-  "WIS.Settings.PennyGranularity.Quarter": "Quarter-penny (0.25)"
+  "WIS.Settings.PennyGranularity.Quarter": "Quarter-penny (0.25)",
+  "WIS.Settings.QuarterSplit.Name": "Split a penny into quarter-pennies",
+  "WIS.Settings.QuarterSplit.Hint": "Adds a “▸ 960 QP” arrow to the money header on the sheet that splits 1 penny into 4 quarter-pennies (only when the sheet has a coin worth 0.25).",
+  "WIS.QuarterSplit.Tooltip": "Split 1 penny into 4 coins: {coin}",
+  "WIS.QuarterSplit.Abbr": "QP",
+  "WIS.QuarterSplit.Error": "No penny to split or no quarter-penny coin on the sheet."
 }

@@ -1,5 +1,5 @@
 // WFRP4e: Reguły zarobku (skalowanie, PS, talenty, pensy/ćwierćpens, podgląd)
-// v1.3.0
+// v1.4.0
 //
 // Dwie nakładki (lib-wrapper, z ręcznym fallbackiem):
 //  1) game.wfrp4e.market.rollIncome  — mnoży bazowy zarobek przez współczynnik
@@ -47,6 +47,7 @@ Hooks.once("init", () => {
     name: "WIS.Settings.PennyGranularity.Name", hint: "WIS.Settings.PennyGranularity.Hint", type: String, default: "whole",
     choices: { whole: "WIS.Settings.PennyGranularity.Whole", quarter: "WIS.Settings.PennyGranularity.Quarter" },
   });
+  reg("quarterSplitButton", { name: "WIS.Settings.QuarterSplit.Name", hint: "WIS.Settings.QuarterSplit.Hint", type: Boolean, default: true });
 });
 
 /* -------------------------------------------- */
@@ -498,4 +499,57 @@ function injectApplyButton(message, html) {
 
 Hooks.on("renderChatMessageHTML", (message, html) => {
   try { injectApplyButton(message, html); } catch (e) { console.error(`${MODULE_ID} | przycisk zarobku`, e); }
+});
+
+/* -------------------------------------------- */
+/*  Rozmienianie pensa na ćwierćpensy (karta)   */
+/* -------------------------------------------- */
+/** Aktualizacje „1 pens → 4 ćwierćpensy" (monety po coinValue 1 / 0,25); null gdy brak monety lub pensa. */
+function quarterSplitUpdates(money) {
+  const byVal = (v) => money.find((m) => Number(m.system?.coinValue?.value) === v);
+  const bp = byVal(1), fa = byVal(0.25);
+  if (!bp || !fa) return null;
+  const bpQty = Number(bp.system?.quantity?.value) || 0;
+  if (bpQty < 1) return null;
+  const faQty = Number(fa.system?.quantity?.value) || 0;
+  return [
+    { _id: bp.id ?? bp._id, "system.quantity.value": bpQty - 1 },
+    { _id: fa.id ?? fa._id, "system.quantity.value": faQty + 4 },
+  ];
+}
+
+/** Dopisuje strzałkę „▸ 960 QP" za systemowym „1 GC ▸ 20 SS ▸ 240 BP" w nagłówku pieniędzy. */
+function injectQuarterSplit(app, html) {
+  if (!game.settings.get(MODULE_ID, "quarterSplitButton")) return;
+  if (game.system?.id !== "wfrp4e") return;
+  const actor = app.document ?? app.actor;
+  if (!actor || !app.isEditable) return;
+  const money = actor.itemTypes?.money ?? [];
+  if (!money.some((m) => Number(m.system?.coinValue?.value) === 0.25)) return; // brak monety ćwierćpensa na karcie
+
+  for (const header of html.querySelectorAll?.(".sheet-list.currency .list-name") ?? []) {
+    if (header.querySelector("[data-wis-split]")) continue; // już dodana (części AppV2 renderują się wielokrotnie)
+    if (!header.querySelector('a[data-action="convertCurrency"][data-type="ss"]')) continue;
+
+    const link = document.createElement("a");
+    link.dataset.wisSplit = "";
+    link.dataset.tooltip = game.i18n.format("WIS.QuarterSplit.Tooltip", { coin: coinNameByValue(actor, 0.25, "QP") });
+    link.dataset.tooltipDirection = "UP";
+    link.innerHTML = `<i class="fas fa-caret-right"></i>`;
+    let busy = false;
+    link.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (busy) return;
+      const updates = quarterSplitUpdates(actor.itemTypes?.money ?? []);
+      if (!updates) return ui.notifications?.error(loc("WIS.QuarterSplit.Error"));
+      busy = true;
+      try { await actor.updateEmbeddedDocuments("Item", updates); } finally { busy = false; }
+    });
+    header.append(" ", link, ` 960 ${loc("WIS.QuarterSplit.Abbr")}`);
+  }
+}
+
+Hooks.on("renderActorSheetV2", (app, html) => {
+  try { injectQuarterSplit(app, html); } catch (e) { console.error(`${MODULE_ID} | rozmienianie na ćwierćpensy`, e); }
 });

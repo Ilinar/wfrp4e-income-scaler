@@ -47,5 +47,10 @@
   "WIS.Settings.PennyGranularity.Name": "Granulacja zaokrąglania",
   "WIS.Settings.PennyGranularity.Hint": "Do ilu zaokrąglać dochód: pełny pens czy ćwierćpens (0,25 — wymaga monety ćwierćpensa na karcie; półpens = 2 ćwierci).",
   "WIS.Settings.PennyGranularity.Whole": "Pełny pens (1)",
-  "WIS.Settings.PennyGranularity.Quarter": "Ćwierćpens (0,25)"
+  "WIS.Settings.PennyGranularity.Quarter": "Ćwierćpens (0,25)",
+  "WIS.Settings.QuarterSplit.Name": "Rozmienianie pensa na ćwierćpensy",
+  "WIS.Settings.QuarterSplit.Hint": "Dodaje w nagłówku pieniędzy na karcie strzałkę „▸ 960 QP”, która rozmienia 1 pensa na 4 ćwierćpensy (tylko gdy na karcie jest moneta o wartości 0,25).",
+  "WIS.QuarterSplit.Tooltip": "Rozmień 1 pensa na 4 monety: {coin}",
+  "WIS.QuarterSplit.Abbr": "QP",
+  "WIS.QuarterSplit.Error": "Brak pensa do rozmienienia lub monety ćwierćpensa na karcie."
 }
